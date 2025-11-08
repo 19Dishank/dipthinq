@@ -24,7 +24,6 @@ const ChatUI = () => {
   const chatContainerRef = useRef(null);
   const inputBarRef = useRef(null);
   const [inputBarHeight, setInputBarHeight] = useState(100);
-  const [viewportHeight, setViewportHeight] = useState(window.innerHeight);
 
   // Load conversations and selected model from localStorage (but don't auto-select conversation)
   useEffect(() => {
@@ -66,14 +65,9 @@ const ChatUI = () => {
   // Detect device size and input bar height
   useEffect(() => {
     const updateDimensions = () => {
-      // Update viewport height
-      const vh = window.innerHeight;
-      setViewportHeight(vh);
-      
       // Detect device type
       const isMobile = window.innerWidth < 768;
       const isTablet = window.innerWidth >= 768 && window.innerWidth < 1024;
-      const isDesktop = window.innerWidth >= 1024;
       
       // Update input bar height
       if (inputBarRef.current) {
