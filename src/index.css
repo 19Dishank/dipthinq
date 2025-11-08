@@ -111,3 +111,50 @@ code {
     font-size: 11px !important;
   }
 }
+
+/* Mobile input bar - fixed positioning to stay visible when URL bar appears */
+@media (max-width: 767px) {
+  .input-bar-container {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    /* Use safe area inset for devices with notches/home indicators */
+    padding-bottom: max(0.5rem, env(safe-area-inset-bottom, 0px)) !important;
+    /* Ensure it stays above browser UI */
+    z-index: 1000 !important;
+    /* Add backdrop blur for better visibility */
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+  
+  /* Ensure messages container accounts for fixed input bar */
+  .messages-container {
+    padding-bottom: 100px !important; /* Will be overridden by inline style, but provides fallback */
+  }
+}
+
+/* Use dvh (dynamic viewport height) for mobile to account for browser UI */
+@media (max-width: 767px) {
+  html {
+    height: 100%;
+    height: 100dvh; /* Dynamic viewport height - accounts for browser UI */
+  }
+  
+  body {
+    height: 100%;
+    height: 100dvh;
+    /* Prevent body scroll on mobile - let the app container handle scrolling */
+    overflow: hidden;
+    position: relative;
+    width: 100%;
+  }
+  
+  #root {
+    height: 100%;
+    height: 100dvh;
+    overflow: hidden;
+    position: relative;
+  }
+}

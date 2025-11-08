@@ -102,6 +102,18 @@ const ChatUI = () => {
     window.addEventListener('orientationchange', () => {
       setTimeout(updateDimensions, 300); // Delay for orientation change
     });
+    
+    // Handle visual viewport changes (mobile browser UI like URL bar)
+    let handleViewportChange;
+    if (window.visualViewport) {
+      handleViewportChange = () => {
+        updateDimensions();
+        // Small delay to ensure accurate measurement after viewport change
+        setTimeout(updateDimensions, 100);
+      };
+      window.visualViewport.addEventListener('resize', handleViewportChange);
+      window.visualViewport.addEventListener('scroll', handleViewportChange);
+    }
 
     // Use ResizeObserver for input bar
     let resizeObserver;
@@ -126,6 +138,10 @@ const ChatUI = () => {
       clearInterval(intervalId);
       window.removeEventListener('resize', updateDimensions);
       window.removeEventListener('orientationchange', updateDimensions);
+      if (window.visualViewport && handleViewportChange) {
+        window.visualViewport.removeEventListener('resize', handleViewportChange);
+        window.visualViewport.removeEventListener('scroll', handleViewportChange);
+      }
       if (resizeObserver) {
         resizeObserver.disconnect();
       }
@@ -191,8 +207,8 @@ const ChatUI = () => {
   // Generate title from first user message
   const generateTitle = async (userMessage) => {
     try {
-      // Use a simpler, faster model for title generation (GPT-3.5 or DeepSeek)
-      const titleModelId = 'openai/gpt-3.5-turbo'; // Fast and cheap for title generation
+      // Use a simpler, faster model for title generation
+      const titleModelId = 'openai/gpt-4o-mini'; // Fast and efficient for title generation
       
       const response = await fetch('/api/chat', {
         method: 'POST',
@@ -327,6 +343,8 @@ IMPORTANT: Return ONLY the title text. No quotes, no explanations, no "Title:" p
     setConversations(updatedConversations);
 
     try {
+      const modelIdToUse = getModelById(selectedModel).modelId;
+      
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: {
@@ -335,7 +353,7 @@ IMPORTANT: Return ONLY the title text. No quotes, no explanations, no "Title:" p
         body: JSON.stringify({
           message: content,
           agentId: selectedAgent,
-          modelId: getModelById(selectedModel).modelId,
+          modelId: modelIdToUse,
           history: messages
         }),
       });
@@ -475,7 +493,7 @@ IMPORTANT: Return ONLY the title text. No quotes, no explanations, no "Title:" p
         {/* Messages Container */}
         <div
           ref={chatContainerRef}
-          className="flex-1 overflow-y-auto px-3 sm:px-4 md:px-6 py-4 sm:py-5 md:py-6 min-w-0 bg-white dark:bg-[#0d0d0d] transition-colors duration-300 relative"
+          className="flex-1 overflow-y-auto px-3 sm:px-4 md:px-6 py-4 sm:py-5 md:py-6 min-w-0 bg-white dark:bg-[#0d0d0d] transition-colors duration-300 relative messages-container"
           style={{ 
             paddingBottom: `${inputBarHeight}px`,
             scrollPaddingBottom: `${inputBarHeight}px`
@@ -562,7 +580,7 @@ IMPORTANT: Return ONLY the title text. No quotes, no explanations, no "Title:" p
         {/* Input Bar - Fixed at bottom */}
         <div 
           ref={inputBarRef}
-          className="w-full border-t border-gray-200 dark:border-white/10 bg-white dark:bg-[#0d0d0d] px-2 sm:px-3 md:px-4 py-2 sm:py-3 md:py-4 flex-shrink-0 transition-colors duration-300"
+          className="w-full border-t border-gray-200 dark:border-white/10 bg-white dark:bg-[#0d0d0d] px-2 sm:px-3 md:px-4 py-2 sm:py-3 md:py-4 flex-shrink-0 transition-colors duration-300 input-bar-container"
           style={{
             position: 'sticky',
             bottom: 0,

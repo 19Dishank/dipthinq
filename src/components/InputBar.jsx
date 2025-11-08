@@ -137,10 +137,7 @@ const InputBar = ({ onSend, isLoading, selectedAgent, onSelectAgent, selectedMod
           >
             <div className="flex items-center gap-0.5 sm:gap-1 md:gap-1.5 min-w-0">
               <span className="text-[8px] sm:text-[9px] md:text-[10px] font-semibold text-indigo-500 dark:text-indigo-400 uppercase tracking-tight leading-none flex-shrink-0">
-                {getModelById(selectedModel).provider === 'OpenAI' ? 'GPT' : 
-                 getModelById(selectedModel).provider === 'DeepSeek' ? 'DS' :
-                 getModelById(selectedModel).provider === 'Google' ? 'GEM' :
-                 getModelById(selectedModel).provider === 'Anthropic' ? 'CLD' : 'AI'}
+                GPT
               </span>
               <span className="text-[10px] sm:text-[11px] md:text-xs lg:text-sm font-medium text-gray-700 dark:text-zinc-200 hidden sm:inline whitespace-nowrap max-w-[60px] sm:max-w-[70px] md:max-w-[80px] lg:max-w-none truncate">
                 {getModelById(selectedModel).name}
@@ -176,10 +173,6 @@ const InputBar = ({ onSend, isLoading, selectedAgent, onSelectAgent, selectedMod
                 >
                 {models.map((model) => {
                   const isSelected = model.id === selectedModel;
-                  const providerAbbr = model.provider === 'OpenAI' ? 'GPT' : 
-                                      model.provider === 'DeepSeek' ? 'DS' :
-                                      model.provider === 'Google' ? 'GEM' :
-                                      model.provider === 'Anthropic' ? 'CLD' : 'AI';
                   
                   return (
                     <motion.button
@@ -190,13 +183,13 @@ const InputBar = ({ onSend, isLoading, selectedAgent, onSelectAgent, selectedMod
                         setIsModelSelectorOpen(false);
                       }}
                       whileHover={{ backgroundColor: 'rgba(99, 102, 241, 0.08)' }}
-                      className={`w-full flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 transition-all border-b border-gray-100 dark:border-white/5 last:border-b-0 ${
+                      className={`w-full flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2.5 sm:py-3 transition-all border-b border-gray-100 dark:border-white/5 ${
                         isSelected ? 'bg-indigo-50 dark:bg-indigo-500/10' : ''
                       }`}
                     >
                       <div className="flex-shrink-0 w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-500/20 dark:to-purple-500/20 flex items-center justify-center">
                         <span className="text-[8px] sm:text-[9px] md:text-[10px] font-bold text-indigo-600 dark:text-indigo-400 uppercase">
-                          {providerAbbr}
+                          GPT
                         </span>
                       </div>
                       <div className="flex-1 min-w-0 text-left">
@@ -213,6 +206,18 @@ const InputBar = ({ onSend, isLoading, selectedAgent, onSelectAgent, selectedMod
                     </motion.button>
                   );
                 })}
+                {/* More models coming soon message */}
+                <div className="px-3 sm:px-4 py-3 sm:py-4 border-t border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5">
+                  <div className="flex items-center gap-2">
+                    <div className="flex-shrink-0 w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-500/20 dark:to-purple-500/20 flex items-center justify-center">
+                      <span className="text-[8px] sm:text-[9px] font-bold text-indigo-600 dark:text-indigo-400">+</span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs sm:text-sm font-medium text-gray-700 dark:text-zinc-300">More models coming soon</p>
+                      <p className="text-[10px] sm:text-xs text-gray-500 dark:text-zinc-500 mt-0.5">Stay tuned for updates</p>
+                    </div>
+                  </div>
+                </div>
                 </motion.div>
               </>
             )}

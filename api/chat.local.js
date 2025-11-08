@@ -71,11 +71,18 @@ async function chatHandler(req, res) {
     });
 
     if (!response.ok) {
-      const errorData = await response.text();
+      let errorData;
+      try {
+        errorData = await response.json();
+      } catch (e) {
+        errorData = await response.text();
+      }
       console.error('OpenRouter API error:', errorData);
+      const errorMessage = errorData?.error?.message || errorData?.error || errorData || 'Unknown error';
       return res.status(response.status).json({ 
         error: 'Failed to get response from AI service',
-        details: errorData
+        details: errorMessage,
+        model: modelId
       });
     }
 
@@ -89,10 +96,12 @@ async function chatHandler(req, res) {
     }
 
     const aiResponse = data.choices[0].message.content;
+    const actualModel = data.model || 'unknown';
 
     return res.status(200).json({ 
       response: aiResponse,
-      model: data.model || 'unknown'
+      model: actualModel,
+      requestedModel: modelId
     });
 
   } catch (error) {
