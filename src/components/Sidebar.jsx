@@ -9,7 +9,7 @@ const Sidebar = ({ isCollapsed, isMobileOpen, onToggle, onMobileClose, conversat
       <motion.div
         initial={false}
         animate={{ x: isMobileOpen ? 0 : '-100%' }}
-        className="fixed inset-y-0 left-0 w-[260px] bg-white dark:bg-[#0d0d0d] glass-strong border-r border-gray-200 dark:border-white/10 flex flex-col overflow-y-auto z-50 md:hidden transition-colors duration-300"
+        className="fixed inset-0 left-0 w-[260px] bg-white dark:bg-[#0d0d0d] glass-strong border-r border-gray-200 dark:border-white/10 flex flex-col overflow-y-auto z-[2000] md:hidden transition-colors duration-300"
       >
         <div className="p-4 sm:p-6 border-b border-gray-200 dark:border-white/5">
           <div className="flex items-center justify-between">

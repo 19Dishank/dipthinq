@@ -411,7 +411,7 @@ IMPORTANT: Return ONLY the title text. No quotes, no explanations, no "Title:" p
       {/* Mobile Sidebar Overlay */}
       {isSidebarOpen && (
         <div
-          className="fixed inset-0 bg-black/50 dark:bg-black/50 backdrop-blur-sm z-40 md:hidden"
+          className="fixed inset-0 bg-black/50 dark:bg-black/50 backdrop-blur-sm z-[1500] md:hidden"
           onClick={() => setIsSidebarOpen(false)}
           aria-hidden="true"
         />
@@ -442,7 +442,7 @@ IMPORTANT: Return ONLY the title text. No quotes, no explanations, no "Title:" p
         <motion.header
           initial={{ y: -20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          className="relative border-b border-gray-200 dark:border-white/10 bg-white dark:bg-[#0d0d0d] px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between flex-shrink-0 transition-colors duration-300"
+          className="relative border-b border-gray-200 dark:border-white/10 bg-white dark:bg-[#0d0d0d] px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between flex-shrink-0 transition-colors duration-300 navbar-container"
         >
           <div className="flex flex-col gap-1 min-w-0">
             <div className="flex items-center gap-3 sm:gap-4">
