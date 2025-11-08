@@ -25,7 +25,6 @@ const ChatUI = () => {
   const inputBarRef = useRef(null);
   const [inputBarHeight, setInputBarHeight] = useState(100);
 
-  // Load conversations and selected model from localStorage (but don't auto-select conversation)
   useEffect(() => {
     const savedConversations = localStorage.getItem('dipthinq-conversations');
     if (savedConversations) {
@@ -45,19 +44,16 @@ const ChatUI = () => {
     }
   }, []);
 
-  // Save conversations to localStorage
   useEffect(() => {
     if (conversations.length > 0) {
       localStorage.setItem('dipthinq-conversations', JSON.stringify(conversations));
     }
   }, [conversations]);
 
-  // Save selected model to localStorage
   useEffect(() => {
     localStorage.setItem('dipthinq-selected-model', selectedModel);
   }, [selectedModel]);
 
-  // Auto-scroll to bottom
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isLoading]);
@@ -174,10 +170,8 @@ const ChatUI = () => {
   const handleSelectConversation = (id) => {
     const conversation = conversations.find(c => c.id === id);
     if (conversation) {
-      // Use requestAnimationFrame to batch updates and prevent lag
       requestAnimationFrame(() => {
         setActiveConversationId(id);
-        // Small delay to allow UI to update before loading messages
         setTimeout(() => {
           setMessages(conversation.messages || []);
         }, 0);
@@ -189,13 +183,10 @@ const ChatUI = () => {
     const updatedConversations = conversations.filter(c => c.id !== id);
     setConversations(updatedConversations);
     
-    // If deleted conversation was active, clear it
     if (activeConversationId === id) {
       setActiveConversationId(null);
       setMessages([]);
     }
-    
-    // Update localStorage
     if (updatedConversations.length > 0) {
       localStorage.setItem('dipthinq-conversations', JSON.stringify(updatedConversations));
     } else {
@@ -277,7 +268,6 @@ IMPORTANT: Return ONLY the title text. No quotes, no explanations, no "Title:" p
   const handleSend = async (content) => {
     if (!content.trim() || isLoading) return;
 
-    // Create new conversation if none exists
     let currentConvId = activeConversationId;
     const isFirstMessage = messages.length === 0;
     if (!currentConvId) {
@@ -303,7 +293,6 @@ IMPORTANT: Return ONLY the title text. No quotes, no explanations, no "Title:" p
     setMessages(newMessages);
     setIsLoading(true);
 
-    // Generate title if this is the first message (non-blocking)
     let conversationTitle = conversations.find(c => c.id === currentConvId)?.title || 'New Conversation';
     if (isFirstMessage && conversationTitle === 'New Conversation') {
       // Use a temporary title for now
@@ -318,11 +307,9 @@ IMPORTANT: Return ONLY the title text. No quotes, no explanations, no "Title:" p
         }
       }).catch(error => {
         console.error('Failed to generate title:', error);
-        // Keep the fallback title
       });
     }
 
-    // Update conversation
     const updatedConversations = conversations.map(conv => {
       if (conv.id === currentConvId) {
         return {

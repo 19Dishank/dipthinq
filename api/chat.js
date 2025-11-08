@@ -51,7 +51,7 @@ export default async function handler(req, res) {
         'X-Title': 'DipThinq'
       },
       body: JSON.stringify({
-        model: modelId, // Use the selected model from the request
+        model: modelId,
         messages: [
           {
             role: 'system',
