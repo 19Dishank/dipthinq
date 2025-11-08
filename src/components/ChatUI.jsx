@@ -174,8 +174,14 @@ const ChatUI = () => {
   const handleSelectConversation = (id) => {
     const conversation = conversations.find(c => c.id === id);
     if (conversation) {
-      setActiveConversationId(id);
-      setMessages(conversation.messages || []);
+      // Use requestAnimationFrame to batch updates and prevent lag
+      requestAnimationFrame(() => {
+        setActiveConversationId(id);
+        // Small delay to allow UI to update before loading messages
+        setTimeout(() => {
+          setMessages(conversation.messages || []);
+        }, 0);
+      });
     }
   };
 
@@ -496,7 +502,9 @@ IMPORTANT: Return ONLY the title text. No quotes, no explanations, no "Title:" p
           className="flex-1 overflow-y-auto px-3 sm:px-4 md:px-6 py-4 sm:py-5 md:py-6 min-w-0 bg-white dark:bg-[#0d0d0d] transition-colors duration-300 relative messages-container"
           style={{ 
             paddingBottom: `${inputBarHeight}px`,
-            scrollPaddingBottom: `${inputBarHeight}px`
+            scrollPaddingBottom: `${inputBarHeight}px`,
+            overscrollBehaviorY: 'auto',
+            WebkitOverflowScrolling: 'touch'
           }}
         >
           {messages.length === 0 || !activeConversationId ? (

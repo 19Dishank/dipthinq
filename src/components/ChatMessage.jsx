@@ -12,7 +12,7 @@ const iconMap = {
   'Search': Search
 };
 
-const ChatMessage = ({ message, agentIcon }) => {
+const ChatMessage = React.memo(({ message, agentIcon }) => {
   const isUser = message.role === 'user';
   const IconComponent = iconMap[agentIcon] || Sparkles;
   const { theme } = useTheme();
@@ -160,7 +160,9 @@ const ChatMessage = ({ message, agentIcon }) => {
       </div>
     </motion.div>
   );
-};
+});
+
+ChatMessage.displayName = 'ChatMessage';
 
 export default ChatMessage;
 
