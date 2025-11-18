@@ -22,7 +22,9 @@ const ChatUI = () => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const messagesEndRef = useRef(null);
   const chatContainerRef = useRef(null);
+  const navbarRef = useRef(null);
   const inputBarRef = useRef(null);
+  const [navbarHeight, setNavbarHeight] = useState(88);
   const [inputBarHeight, setInputBarHeight] = useState(100);
 
   useEffect(() => {
@@ -47,6 +49,8 @@ const ChatUI = () => {
   useEffect(() => {
     if (conversations.length > 0) {
       localStorage.setItem('dipthinq-conversations', JSON.stringify(conversations));
+    } else {
+      localStorage.removeItem('dipthinq-conversations');
     }
   }, [conversations]);
 
@@ -59,14 +63,17 @@ const ChatUI = () => {
   }, [messages, isLoading]);
 
   // Detect device size and input bar height
+  const shouldShowInput = Boolean(activeConversationId);
+
   useEffect(() => {
     const updateDimensions = () => {
       // Detect device type
       const isMobile = window.innerWidth < 768;
       const isTablet = window.innerWidth >= 768 && window.innerWidth < 1024;
+      const extraTopPadding = isMobile ? 20 : 12;
       
       // Update input bar height
-      if (inputBarRef.current) {
+      if (inputBarRef.current && shouldShowInput) {
         const rect = inputBarRef.current.getBoundingClientRect();
         const height = rect.height;
         const safeAreaBottom = parseInt(
@@ -87,6 +94,21 @@ const ChatUI = () => {
         // Calculate total height needed
         const totalHeight = height + safeAreaBottom + extraPadding;
         setInputBarHeight(Math.max(totalHeight, 80)); // Minimum 80px
+      } else {
+        // Minimal padding when input bar is hidden or not measured yet
+        const fallbackHeight = isMobile ? 52 : 40;
+        setInputBarHeight(fallbackHeight);
+      }
+
+      // Update navbar height (important for fixed mobile navbar)
+      if (navbarRef.current) {
+        const rect = navbarRef.current.getBoundingClientRect();
+        const safeAreaTop = isMobile ? (window.visualViewport?.offsetTop || 0) : 0;
+        const computedHeight = rect.height + safeAreaTop + extraTopPadding;
+        const minHeight = isMobile ? 96 : rect.height;
+        setNavbarHeight(Math.max(computedHeight, minHeight));
+      } else if (isMobile) {
+        setNavbarHeight(96);
       }
     };
 
@@ -142,7 +164,23 @@ const ChatUI = () => {
         resizeObserver.disconnect();
       }
     };
-  }, []);
+  }, [shouldShowInput]);
+
+  const cleanupEmptyActiveConversation = (preserveActiveState = false) => {
+    if (!activeConversationId) return false;
+    const currentConversation = conversations.find(c => c.id === activeConversationId);
+    const isEmpty = currentConversation && (!currentConversation.messages || currentConversation.messages.length === 0);
+    
+    if (isEmpty) {
+      setConversations(prev => prev.filter(c => c.id !== activeConversationId));
+      if (!preserveActiveState) {
+        setActiveConversationId(null);
+        setMessages([]);
+      }
+      return true;
+    }
+    return false;
+  };
 
   const handleNewChat = () => {
     // Check if current conversation is empty
@@ -170,6 +208,9 @@ const ChatUI = () => {
   const handleSelectConversation = (id) => {
     const conversation = conversations.find(c => c.id === id);
     if (conversation) {
+      if (activeConversationId !== id) {
+        cleanupEmptyActiveConversation(true);
+      }
       requestAnimationFrame(() => {
         setActiveConversationId(id);
         setTimeout(() => {
@@ -398,6 +439,7 @@ IMPORTANT: Return ONLY the title text. No quotes, no explanations, no "Title:" p
 
   const currentAgent = getAgentById(selectedAgent);
   const currentConversation = conversations.find(c => c.id === activeConversationId);
+  const shouldShowLanding = !activeConversationId;
 
   return (
     <div className="flex h-screen bg-white dark:bg-[#0d0d0d] text-gray-900 dark:text-white overflow-hidden transition-colors duration-300">
@@ -433,6 +475,7 @@ IMPORTANT: Return ONLY the title text. No quotes, no explanations, no "Title:" p
       <div className="flex flex-col w-full h-full min-h-0 overflow-hidden">
         {/* Top Navbar */}
         <motion.header
+          ref={navbarRef}
           initial={{ y: -20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           className="relative border-b border-gray-200 dark:border-white/10 bg-white dark:bg-[#0d0d0d] px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between flex-shrink-0 transition-colors duration-300 navbar-container"
@@ -488,13 +531,15 @@ IMPORTANT: Return ONLY the title text. No quotes, no explanations, no "Title:" p
           ref={chatContainerRef}
           className="flex-1 overflow-y-auto px-3 sm:px-4 md:px-6 py-4 sm:py-5 md:py-6 min-w-0 bg-white dark:bg-[#0d0d0d] transition-colors duration-300 relative messages-container"
           style={{ 
-            paddingBottom: `${inputBarHeight}px`,
-            scrollPaddingBottom: `${inputBarHeight}px`,
+            paddingTop: `${navbarHeight}px`,
+            paddingBottom: `${shouldShowInput ? inputBarHeight : 32}px`,
+            scrollPaddingTop: `${navbarHeight + 16}px`,
+            scrollPaddingBottom: `${shouldShowInput ? inputBarHeight : 32}px`,
             overscrollBehaviorY: 'auto',
             WebkitOverflowScrolling: 'touch'
           }}
         >
-          {messages.length === 0 || !activeConversationId ? (
+          {shouldShowLanding ? (
             <div className="h-full flex items-center justify-center px-4">
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -573,27 +618,29 @@ IMPORTANT: Return ONLY the title text. No quotes, no explanations, no "Title:" p
         </div>
 
         {/* Input Bar - Fixed at bottom */}
-        <div 
-          ref={inputBarRef}
-          className="w-full border-t border-gray-200 dark:border-white/10 bg-white dark:bg-[#0d0d0d] px-2 sm:px-3 md:px-4 py-2 sm:py-3 md:py-4 flex-shrink-0 transition-colors duration-300 input-bar-container"
-          style={{
-            position: 'sticky',
-            bottom: 0,
-            zIndex: 10,
-            paddingBottom: `max(0.5rem, env(safe-area-inset-bottom, 0px))`,
-            backgroundColor: 'inherit'
-          }}
-        >
-            <InputBar
-              onSend={handleSend}
-              isLoading={isLoading}
-              selectedAgent={selectedAgent}
-              onSelectAgent={setSelectedAgent}
-              selectedModel={selectedModel}
-              onSelectModel={setSelectedModel}
-              placeholder="Ask anything"
-            />
-        </div>
+        {shouldShowInput && (
+          <div 
+            ref={inputBarRef}
+            className="w-full border-t border-gray-200 dark:border-white/10 bg-white dark:bg-[#0d0d0d] px-2 sm:px-3 md:px-4 py-2 sm:py-3 md:py-4 flex-shrink-0 transition-colors duration-300 input-bar-container"
+            style={{
+              position: 'sticky',
+              bottom: 0,
+              zIndex: 10,
+              paddingBottom: `max(0.5rem, env(safe-area-inset-bottom, 0px))`,
+              backgroundColor: 'inherit'
+            }}
+          >
+              <InputBar
+                onSend={handleSend}
+                isLoading={isLoading}
+                selectedAgent={selectedAgent}
+                onSelectAgent={setSelectedAgent}
+                selectedModel={selectedModel}
+                onSelectModel={setSelectedModel}
+                placeholder="Ask anything"
+              />
+          </div>
+        )}
       </div>
 
       {/* Settings Modal */}
